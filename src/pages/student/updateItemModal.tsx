@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
 import { generateClient } from 'aws-amplify/data';
-import { type Schema } from '../../amplify/data/resource';
+import { type Schema } from '../../../amplify/data/resource';
 import { uploadData } from 'aws-amplify/storage';
 
 const client = generateClient<Schema>();

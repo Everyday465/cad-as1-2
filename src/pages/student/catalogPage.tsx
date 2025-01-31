@@ -16,9 +16,9 @@ import { CarryOutOutlined, CommentOutlined, EllipsisOutlined } from '@ant-design
 import { Link } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/data';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
-import UpdateModal from './updateItem';
-import DeleteModal from './deleteItem';
-import type { Schema } from '../../amplify/data/resource';
+import UpdateModal from './updateItemModal';
+import DeleteModal from './deleteItemModal';
+import type { Schema } from '../../../amplify/data/resource';
 
 const { Meta } = Card;
 const { Content, Footer } = Layout;

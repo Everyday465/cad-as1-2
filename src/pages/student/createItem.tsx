@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button, Form, Input, Select, Layout, Breadcrumb, message, theme } from "antd";
 import { uploadData } from 'aws-amplify/storage';
-import type { Schema } from "../../amplify/data/resource";
+import type { Schema } from "../../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
 const { TextArea } = Input;

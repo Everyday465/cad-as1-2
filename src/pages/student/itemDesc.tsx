@@ -3,10 +3,10 @@ import { Breadcrumb, Layout, theme, Descriptions, Tag, message, Dropdown, Space,
 import { DownOutlined } from '@ant-design/icons';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../../amplify/data/resource';
+import type { Schema } from '../../../amplify/data/resource';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
-import UpdateModal from './updateItem';
-import DeleteModal from './deleteItem';
+import UpdateModal from './updateItemModal';
+import DeleteModal from './deleteItemModal';
 
 const { Content, Footer } = Layout;
 

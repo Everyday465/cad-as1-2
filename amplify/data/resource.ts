@@ -5,28 +5,22 @@ import { addUserToGroup } from "./add-user-to-group/resource"
 The section below creates two database tables: "Todo" and "Notes". 
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-      isDone: a.boolean(), 
-    })
-    .authorization((allow) => [allow.publicApiKey()]),
 
   Item: a
     .model({
       itemName: a.string(),
-      itemDesc: a.string(), 
-      itemType: a.string(), 
-      itemStatus: a.string(), 
+      itemDesc: a.string(),
+      itemType: a.string(),
+      itemStatus: a.string(),
       foundLostBy: a.string(),
       imagePath: a.string(),
     })
-    .authorization((allow)=> [
-      allow.groups(["ADMINS"]).to(["read","create", "update", "delete"]),
+    .authorization((allow) => [
+      allow.groups(["ADMINS"]).to(["read", "create", "update", "delete"]),
       allow.groups(["STUDENTS"]).to(["read"])
     ]),
 
-    addUserToGroup: a
+  addUserToGroup: a
     .mutation()
     .arguments({
       userId: a.string().required(),
@@ -36,20 +30,6 @@ const schema = a.schema({
     .handler(a.handler.function(addUserToGroup))
     .returns(a.json()),
 
-
-    test: a
-    .model({
-      itemName: a.string(),
-      itemDesc: a.string(), 
-      itemType: a.string(), 
-      itemStatus: a.string(), 
-      foundLostBy: a.string(),
-      imagePath: a.string(),
-    })
-    .authorization((allow)=> [
-      allow.groups(["ADMINS"]).to(["read","create", "update", "delete"]),
-      allow.groups(["STUDENTS"]).to(["read"])
-    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

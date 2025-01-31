@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import TemplatePage from './pages/templatePage';
-import CatalogPage from './pages/catalogPage';
-import ItemDescription from './pages/itemDesc';
-import CreateItem from './pages/createItem';
+
+import CatalogPage from './pages/student/catalogPage';
+import ItemDescription from './pages/student/itemDesc';
+import CreateItem from './pages/student/createItem';
 import Test from './pages/test';
+
+//admin
+import ItemCatalogPage from './pages/admin/itemCatalogPage';
 
 import { Avatar, Layout, Menu, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
@@ -16,9 +19,9 @@ const App = () => {
   const { signOut } = useAuthenticator();
 
   const menuItems = [
-    { label: 'Lost & Found', link: '/catalogPage' },
+    { label: 'Lost & Found', link: '/itemCatalogPage' },
     { label: 'I found/lost something', link: '/createItem' },
-    { label: 'I lost something', link: '/i-lost-something' },
+    { label: 'Check Database', link: '/i-lost-something' },
   ];
 
   const items: MenuProps['items'] = menuItems.map((item) => ({
@@ -46,8 +49,6 @@ const App = () => {
     />
 
   );
-
-
   return (
     <Router>
       <Header
@@ -88,7 +89,7 @@ const App = () => {
       </Header>
 
       <Routes>
-        <Route path="/" element={<TemplatePage />} />
+        <Route path="/itemCatalogPage" element={<ItemCatalogPage/>} />
         <Route path="/catalogPage" element={<CatalogPage />} />
         <Route path="/catalogPage/:id" element={<ItemDescription />} />
         <Route path="/createItem" element={<CreateItem />} />

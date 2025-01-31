@@ -10,7 +10,6 @@ export const auth = defineAuth({
     email: true,
   },
 
-    
   groups: ["ADMINS", "STUDENTS"],
     
   access: (allow) => [
