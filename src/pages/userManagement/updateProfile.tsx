@@ -129,7 +129,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
 
     return (
         <Modal
-            title="Update Item"
+            title="Update Item(redeploy)"
             open={true}
             onOk={handleOk}
             confirmLoading={confirmLoading}
