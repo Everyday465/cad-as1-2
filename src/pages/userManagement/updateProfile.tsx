@@ -142,14 +142,6 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
                 </Form.Item>
 
                 <Form.Item
-                    label="Description"
-                    name="description"
-                    rules={[{ required: true, message: 'Please enter the description' }]}
-                >
-                    <Input.TextArea rows={4} />
-                </Form.Item>
-
-                <Form.Item
                     label="Receive Notification"
                     name="type"
                     rules={[{ required: true, message: 'Please select subscription status' }]}
@@ -163,9 +155,8 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
                 <Form.Item
                     label="Auth Type"
                     name="authType"
-                    rules={[{ required: true, message: 'Please select auth type' }]}
                 >
-                    <Select>
+                    <Select disabled>
                         <Select.Option value="Admin">Admin</Select.Option>
                         <Select.Option value="Student">Student</Select.Option>
                     </Select>

@@ -2,18 +2,31 @@ import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { Card, Descriptions, Divider, Layout, Breadcrumb, theme, Dropdown, Button, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { fetchUserAttributes, FetchUserAttributesOutput } from 'aws-amplify/auth'; // Import FetchUserAttributesOutput
+import { fetchUserAttributes, FetchUserAttributesOutput, fetchAuthSession } from 'aws-amplify/auth'; // Import FetchUserAttributesOutput
 import UpdateProfileModal from './updateProfile';
 
 const { Content, Footer } = Layout;
 
 const defaultCover = 'https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png';
 
+async function getUserGroups(): Promise<string> {
+    try {
+        const session = await fetchAuthSession();
+        const groups = session.tokens?.accessToken.payload['cognito:groups'] || [];
+        return Array.isArray(groups) && groups.length > 0 ? String(groups[0]) : ''; // Ensure it's a string
+    } catch (error) {
+        console.error('Error fetching user groups:', error);
+        return '';
+    }
+}
+
+
 const ProfilePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [userAttributes, setUserAttributes] = useState<FetchUserAttributesOutput | null>(null); // Properly type the state
     const [updateProfileModalVisible, setUpdateProfileModalVisible] = useState(false);
     const [changePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
+    const [authType, setAuthType] = useState(userAttributes?.auth_type || '');
 
     const dropdownItems = [
         {
@@ -27,12 +40,23 @@ const ProfilePage: React.FC = () => {
         },
     ];
 
+    
+
+    useEffect(() => {
+        if (!userAttributes?.auth_type) {
+            getUserGroups().then(group => setAuthType(group)); // Ensuring 'group' is a string
+        }
+    }, [userAttributes?.auth_type]);
+    
+
     // Fetch user attributes when the component mounts
     useEffect(() => {
+        getUserGroups()
         const fetchUserData = async () => {
             try {
                 const attributes = await fetchUserAttributes();
                 setUserAttributes(attributes); // Set the fetched attributes to state
+                console.log("User attributes: " + JSON.stringify(attributes, null, 2));
             } catch (error) {
                 console.error('Error fetching user attributes:', error);
             }
@@ -63,7 +87,7 @@ const ProfilePage: React.FC = () => {
                     <Card bordered={false} loading={loading}>
                         <StorageImage
                             alt={defaultCover}
-                            path='uploads/1735195523776_bell__notification.jpg'
+                            path={userAttributes?.profile_pic || 'uploads/1735195523776_bell__notification.jpg'}
                             style={{
                                 width: '100%',
                                 height: '150px',
@@ -97,13 +121,13 @@ const ProfilePage: React.FC = () => {
                             }}
                         >
                             <Descriptions.Item label="Username">
-                                {userAttributes?.username || 'Loading...'}
+                                {userAttributes?.username || 'Not Configured'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Email">
                                 {userAttributes?.email || 'Loading...'}
                             </Descriptions.Item>
                             <Descriptions.Item label="User Type">
-                                {userAttributes?.userType || 'Loading...'}
+                                {authType || 'Loading...'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Notification Subscription">
                                 {userAttributes?.isSubscribed ? 'True' : 'False'}
@@ -127,7 +151,7 @@ const ProfilePage: React.FC = () => {
                     profile={{
                         username: userAttributes?.username || '',
                         profile_pic: userAttributes?.profilePic || '',
-                        auth_type: userAttributes?.authType || '',
+                        auth_type: userAttributes?.authType || authType,
                         is_subscribed: userAttributes?.authType || '', 
                     }}
                     onProfileUpdated={() => {

@@ -9,5 +9,11 @@ export const storage = defineStorage({
       allow.groups(["STUDENTS"]).to(["read", "write"]),
       allow.groups(["ADMINS"]).to(["read", "write"]),
     ],
+    'profilepics/*': [
+      allow.guest.to(['read']),
+      allow.authenticated.to(['read','write']),
+      allow.groups(["STUDENTS"]).to(["read", "write"]),
+      allow.groups(["ADMINS"]).to(["read", "write"]),
+    ],
   })
 });
