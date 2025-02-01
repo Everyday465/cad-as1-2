@@ -7,7 +7,6 @@ import {
 import { Form, Input, Modal, Select, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import { fetchUserAttributes } from 'aws-amplify/auth';
 import { uploadData } from 'aws-amplify/storage';
 
 async function handleUpdateUserAttribute(attributeKey: string, value: string) {
@@ -46,13 +45,11 @@ interface UpdateProfileModalProps {
         username: string;
         profile_pic: string;
         auth_type: string;
-        is_subscribed: boolean;
+        is_subscribed: string;
     };
     onProfileUpdated: () => void; // Callback to refresh the item details after updating
     onCancel: () => void; // Callback to close the modal
 }
-
-const userAttributes = await fetchUserAttributes();
 
 
 const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProfileUpdated, onCancel }) => {
@@ -60,6 +57,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [form] = Form.useForm();
     const [file, setFile] = useState<File | null>(null); // File state
+   
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const fileInput = event.target.files;
@@ -69,7 +67,6 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
     };
 
     useEffect(() => {
-        console.log('user atrributes: '+ userAttributes)
         form.setFieldsValue({
             username: profile.username,
             auth_type: profile.auth_type,
@@ -129,7 +126,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
 
     return (
         <Modal
-            title="Update Item(redeploy)"
+            title="Update Item"
             open={true}
             onOk={handleOk}
             confirmLoading={confirmLoading}

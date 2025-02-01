@@ -1,23 +1,17 @@
 import { StorageImage } from '@aws-amplify/ui-react-storage';
-
 import { Card, Descriptions, Divider, Layout, Breadcrumb, theme, Dropdown, Button, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
-
-const { Content, Footer } = Layout;
-
 import { DownOutlined } from '@ant-design/icons';
-
-import { fetchUserAttributes } from 'aws-amplify/auth';
+import { fetchUserAttributes, FetchUserAttributesOutput } from 'aws-amplify/auth'; // Import FetchUserAttributesOutput
 import UpdateProfileModal from './updateProfile';
 
-const userAttributes = await fetchUserAttributes();
-
+const { Content, Footer } = Layout;
 
 const defaultCover = 'https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png';
 
 const ProfilePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
-
+    const [userAttributes, setUserAttributes] = useState<FetchUserAttributesOutput | null>(null); // Properly type the state
     const [updateProfileModalVisible, setUpdateProfileModalVisible] = useState(false);
     const [changePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
 
@@ -33,15 +27,25 @@ const ProfilePage: React.FC = () => {
         },
     ];
 
+    // Fetch user attributes when the component mounts
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const attributes = await fetchUserAttributes();
+                setUserAttributes(attributes); // Set the fetched attributes to state
+            } catch (error) {
+                console.error('Error fetching user attributes:', error);
+            }
+        };
+
+        fetchUserData();
+    }, []); // Empty dependency array ensures this runs only once on mount
+
     const refreshList = async () => {
         setLoading(true);
+        // Add logic to refresh data if needed
         setLoading(false);
-
     };
-
-    useEffect(() => {
-        console.log(userAttributes)
-    });
 
     return (
         <Layout>
@@ -91,12 +95,19 @@ const ProfilePage: React.FC = () => {
                             style={{
                                 marginBottom: 32,
                             }}
-
                         >
-                            <Descriptions.Item label="Username">1000000000</Descriptions.Item>
-                            <Descriptions.Item label="Email">已取货</Descriptions.Item>
-                            <Descriptions.Item label="User Type">1234123421</Descriptions.Item>
-                            <Descriptions.Item label="Notification Subscription">True</Descriptions.Item>
+                            <Descriptions.Item label="Username">
+                                {userAttributes?.username || 'Loading...'}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Email">
+                                {userAttributes?.email || 'Loading...'}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="User Type">
+                                {userAttributes?.userType || 'Loading...'}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Notification Subscription">
+                                {userAttributes?.isSubscribed ? 'True' : 'False'}
+                            </Descriptions.Item>
                         </Descriptions>
                         <Divider
                             style={{
@@ -114,30 +125,27 @@ const ProfilePage: React.FC = () => {
             {updateProfileModalVisible && (
                 <UpdateProfileModal
                     profile={{
-                        username: "userAttributes.",
-                        profile_pic: "userAttributes.",
-                        auth_type: "userAttributes.",
-                        is_subscribed: true,
-
+                        username: userAttributes?.username || '',
+                        profile_pic: userAttributes?.profilePic || '',
+                        auth_type: userAttributes?.authType || '',
+                        is_subscribed: userAttributes?.authType || '', 
                     }}
                     onProfileUpdated={() => {
                         refreshList();
                         setUpdateProfileModalVisible(false);
                     }}
                     onCancel={() => setUpdateProfileModalVisible(false)}
-
                 />
             )}
 
-            {/* Delete Modal */}
+            {/* Change Password Modal */}
             {changePasswordModalVisible && (
                 <div>
-                    change password
+                    Change Password
                 </div>
-
             )}
         </Layout>
-
     );
 };
+
 export default ProfilePage;
