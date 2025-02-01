@@ -7,6 +7,7 @@ import Test from './pages/test';
 
 //admin
 import ItemCatalogPage from './pages/admin/itemCatalogPage';
+import ProfilePage from './pages/userManagement/profilePage';
 
 import { Avatar, Layout, Menu, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
@@ -35,7 +36,7 @@ const App = () => {
       items={[
         {
           key: '1',
-          label: <Link to="/profile">Profile</Link>,
+          label: <Link to="/profilePage">Profile</Link>,
         },
         {
           key: '2',
@@ -94,6 +95,7 @@ const App = () => {
         <Route path="/catalogPage/:id" element={<ItemDescription />} />
         <Route path="/createItem" element={<CreateItem />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/profilePage" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

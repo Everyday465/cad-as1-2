@@ -11,6 +11,27 @@ export const auth = defineAuth({
   },
 
   groups: ["ADMINS", "STUDENTS"],
+
+  userAttributes: {
+    "custom:username": {
+      dataType: "String",
+      mutable: true,
+      maxLen: 16,
+      minLen: 1,
+    },
+    "custom:profile_pic": {
+      dataType: "String",
+      mutable: true,
+    },
+    "custom:auth_type": {
+      dataType: "String",
+      mutable: true,
+    },
+    "custom:is_subscribed": {
+      dataType: "String",
+      mutable: true,
+    },
+  },
     
   access: (allow) => [
     allow.resource(addUserToGroup).to(["addUserToGroup"])
