@@ -146,18 +146,20 @@ const ProfilePage: React.FC = () => {
                     }}
                 >
                     <Card bordered={false} loading={loading}>
-                        <StorageImage
-                            alt={defaultCover}
-                            path={userProfile?.profilePath || 'uploads/1735195523776_bell__notification.jpg'}
-                            style={{
-                                width: '175px',
-                                height: '175px',
-                                objectPosition: 'center',
-                                borderRadius: '50%', // Make it circular
-                                border: '2px solid #ffffff', // Add a border (adjust color and thickness as needed)
-                                objectFit: 'cover', // Ensure the image covers the circle without distortion
-                            }}
-                        />
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
+                            <StorageImage
+                                alt={defaultCover}
+                                path={userProfile?.profilePath || 'uploads/1735195523776_bell__notification.jpg'}
+                                style={{
+                                    width: '175px',
+                                    height: '175px',
+                                    objectPosition: 'center',
+                                    borderRadius: '50%', // Make it circular
+                                    border: '2px solid #ffffff', // Add a border (adjust color and thickness as needed)
+                                    objectFit: 'cover', // Ensure the image covers the circle without distortion
+                                }}
+                            />
+                        </div>
 
                         <Descriptions
                             title={
@@ -213,6 +215,7 @@ const ProfilePage: React.FC = () => {
                 <UpdateProfileModal
                     profile={{
                         userId: userProfile?.userId || '',
+                        userEmail: userAttributes?.email || '',
                         username: userProfile?.username || '',
                         profilePath: userProfile?.profilePath || '',
                         authType: userProfile?.authType || authType,

@@ -1,5 +1,8 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { addUserToGroup } from "./add-user-to-group/resource"
+import { notification } from "../functions/notification/resource";
+import { verifyEmailSES } from "../functions/verify-email-ses/resource";
+import { checkEmailSESStatus } from "../functions/check-email-ses-status/resource";
 
 /*== STEP 1 ===============================================================
 The section below creates two database tables: "Todo" and "Notes". 
@@ -21,7 +24,7 @@ const schema = a.schema({
     ]),
 
 
-    UserProfile: a
+  UserProfile: a
     .model({
       userId: a.string().required(),
       email: a.string(),
@@ -45,6 +48,53 @@ const schema = a.schema({
     .authorization((allow) => [allow.group("ADMINS")])
     .handler(a.handler.function(addUserToGroup))
     .returns(a.json()),
+
+
+  sendNotification: a
+    .query()
+    .arguments({
+      itemId: a.string(),
+      itemName: a.string(),
+      itemDesc: a.string(),
+      userEmail: a.string(),
+      createdAt: a.string(),
+    })
+    .authorization((allow) => [
+      allow.groups(["ADMINS"]),
+      allow.groups(["STUDENTS"]),
+    ])
+    .handler(a.handler.function(notification))
+    .returns(
+      a.json()
+    ),
+
+    verifyEmailSES: a
+    .query()
+    .arguments({
+      userEmail: a.string(),
+    })
+    .authorization((allow) => [
+      allow.groups(["ADMINS"]),
+      allow.groups(["STUDENTS"]),
+    ])
+    .handler(a.handler.function(verifyEmailSES))
+    .returns(
+      a.json()
+    ),
+
+    checkEmailSESStatus: a
+    .query()
+    .arguments({
+      userEmail: a.string(),
+    })
+    .authorization((allow) => [
+      allow.groups(["ADMINS"]),
+      allow.groups(["STUDENTS"]),
+    ])
+    .handler(a.handler.function(checkEmailSESStatus))
+    .returns(
+      a.json()
+    ),
 
 });
 
