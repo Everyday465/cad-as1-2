@@ -43,9 +43,9 @@ function handleUpdateUserAttributeNextSteps(output: UpdateUserAttributeOutput) {
 interface UpdateProfileModalProps {
     profile: {
         username: string;
-        profile_pic: string;
-        auth_type: string;
-        is_subscribed: string;
+        profilePath: string;
+        authType: string;
+        isSubscribed: string;
     };
     onProfileUpdated: () => void; // Callback to refresh the item details after updating
     onCancel: () => void; // Callback to close the modal
@@ -69,8 +69,8 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
     useEffect(() => {
         form.setFieldsValue({
             username: profile.username,
-            auth_type: profile.auth_type,
-            is_subscribed: profile.is_subscribed,
+            authType: profile.authType,
+            isSubscribed: profile.isSubscribed,
         });
     }, [form, profile]);
 
@@ -97,9 +97,9 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
 
             try {
                 handleUpdateUserAttribute("username", values.username)
-                handleUpdateUserAttribute("auth_type", values.auth_type)
-                handleUpdateUserAttribute("profile_pic", filePath || values.profile_pic)
-                handleUpdateUserAttribute("is_subscribed", values.is_subscribed)
+                handleUpdateUserAttribute("auth_type", values.authType)
+                handleUpdateUserAttribute("profile_pic", filePath || values.profilePath)
+                handleUpdateUserAttribute("is_subscribed", values.isSubscribed)
 
             } catch (error) {
                 message.error('Failed to update item. Please try again.');

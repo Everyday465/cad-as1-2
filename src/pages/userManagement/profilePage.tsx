@@ -1,9 +1,17 @@
 import { StorageImage } from '@aws-amplify/ui-react-storage';
-import { Card, Descriptions, Divider, Layout, Breadcrumb, theme, Dropdown, Button, Space } from 'antd';
+import { Card, Descriptions, Divider, Layout, Breadcrumb, theme, message, Dropdown, Button, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import { fetchUserAttributes, FetchUserAttributesOutput, fetchAuthSession } from 'aws-amplify/auth'; // Import FetchUserAttributesOutput
 import UpdateProfileModal from './updateProfile';
+
+
+import { useAuthenticator } from "@aws-amplify/ui-react";
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../../amplify/data/resource';
+
+// Generate the Amplify client
+const client = generateClient<Schema>();
 
 const { Content, Footer } = Layout;
 
@@ -20,6 +28,15 @@ async function getUserGroups(): Promise<string> {
     }
 }
 
+interface UserProfile {
+    userId: string;
+    email: string;
+    username: string;
+    authType: string;
+    profilePath: string;
+    isSubscribed: string;
+}
+
 
 const ProfilePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
@@ -27,6 +44,9 @@ const ProfilePage: React.FC = () => {
     const [updateProfileModalVisible, setUpdateProfileModalVisible] = useState(false);
     const [changePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
     const [authType, setAuthType] = useState(userAttributes?.auth_type || '');
+    const { user } = useAuthenticator((context) => [context.user]);
+
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
     const dropdownItems = [
         {
@@ -40,36 +60,83 @@ const ProfilePage: React.FC = () => {
         },
     ];
 
-    
-
-    useEffect(() => {
-        if (!userAttributes?.auth_type) {
-            getUserGroups().then(group => setAuthType(group)); // Ensuring 'group' is a string
-        }
-    }, [userAttributes?.auth_type]);
-    
-
-    // Fetch user attributes when the component mounts
-    useEffect(() => {
-        getUserGroups()
-        const fetchUserData = async () => {
-            try {
-                const attributes = await fetchUserAttributes();
-                setUserAttributes(attributes); // Set the fetched attributes to state
-                console.log("User attributes: " + JSON.stringify(attributes, null, 2));
-            } catch (error) {
-                console.error('Error fetching user attributes:', error);
-            }
-        };
-
-        fetchUserData();
-    }, []); // Empty dependency array ensures this runs only once on mount
 
     const refreshList = async () => {
         setLoading(true);
         // Add logic to refresh data if needed
         setLoading(false);
     };
+
+    const getUserProfile = async () => {
+        const userId = user?.username
+        if (user.username) {
+            try {
+                const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
+                if (data) {
+                    setUserProfile({
+                        userId: data.userId ?? 'Unknown User ID',
+                        email: data.email ?? 'No Email',
+                        username: data.username ?? 'No Username',
+                        authType: data.authType ?? 'Unknown Auth Type',
+                        profilePath: data.profilePath ?? 'Unknown Path',
+                        isSubscribed: data.isSubscribed ?? 'false',
+
+                    });
+                } else {
+                    createUserProfile();
+                    const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
+                    setUserProfile({
+                        userId: data?.userId ?? 'Unknown User ID',
+                        email: data?.email ?? 'No Email',
+                        username: data?.username ?? 'No Username',
+                        authType: data?.authType ?? 'Unknown Auth Type',
+                        profilePath: data?.profilePath ?? 'Unknown Path',
+                        isSubscribed: data?.isSubscribed ?? 'false',
+
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching item:', error);
+                message.error('Failed to fetch item details.');
+            }
+        }
+    };
+
+    const createUserProfile = async () => {
+        const userId = user?.username
+        const email = userAttributes?.email
+        // Make the API call to create a new item
+        const newUserProfile = await client.models.UserProfile.create({
+            userId: userId ?? 'Unknown User ID',
+            email: email ?? 'No Email',
+            username: '',
+            authType: authType,
+            profilePath: '',
+            isSubscribed: ''
+        }, { authMode: 'userPool', });
+        console.log("Created new user profile:", newUserProfile);
+    }
+
+    const fetchUserData = async () => {
+        try {
+            const attributes = await fetchUserAttributes();
+            setUserAttributes(attributes); // Set the fetched attributes to state
+            console.log("User attributes: " + JSON.stringify(attributes, null, 2));
+        } catch (error) {
+            console.error('Error fetching user attributes:', error);
+        }
+    };
+
+    // Fetch user attributes when the component mounts
+    useEffect(() => {
+        getUserGroups().then(group => setAuthType(group));
+
+        fetchUserData();
+
+        getUserProfile();
+    }, []); // Empty dependency array ensures this runs only once on mount
+
+
 
     return (
         <Layout>
@@ -87,7 +154,7 @@ const ProfilePage: React.FC = () => {
                     <Card bordered={false} loading={loading}>
                         <StorageImage
                             alt={defaultCover}
-                            path={userAttributes?.profile_pic || 'uploads/1735195523776_bell__notification.jpg'}
+                            path={userProfile?.profilePath || 'uploads/1735195523776_bell__notification.jpg'}
                             style={{
                                 width: '100%',
                                 height: '150px',
@@ -121,16 +188,16 @@ const ProfilePage: React.FC = () => {
                             }}
                         >
                             <Descriptions.Item label="Username">
-                                {userAttributes?.username || 'Not Configured'}
+                                {userProfile?.username || 'Not Configured'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Email">
-                                {userAttributes?.email || 'Loading...'}
+                                {userProfile?.email || 'Loading...'}
                             </Descriptions.Item>
                             <Descriptions.Item label="User Type">
-                                {authType || 'Loading...'}
+                                {userProfile?.authType || 'Loading...'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Notification Subscription">
-                                {userAttributes?.isSubscribed ? 'True' : 'False'}
+                                {userProfile?.isSubscribed ? 'True' : 'False'}
                             </Descriptions.Item>
                         </Descriptions>
                         <Divider
@@ -149,10 +216,10 @@ const ProfilePage: React.FC = () => {
             {updateProfileModalVisible && (
                 <UpdateProfileModal
                     profile={{
-                        username: userAttributes?.username || '',
-                        profile_pic: userAttributes?.profilePic || '',
-                        auth_type: userAttributes?.authType || authType,
-                        is_subscribed: userAttributes?.authType || '', 
+                        username: userProfile?.username || '',
+                        profilePath: userProfile?.profilePath || '',
+                        authType: userProfile?.authType || authType,
+                        isSubscribed: userProfile?.authType || '',
                     }}
                     onProfileUpdated={() => {
                         refreshList();

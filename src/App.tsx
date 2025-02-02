@@ -95,7 +95,7 @@ const App = () => {
         <Route path="/catalogPage/:id" element={<ItemDescription />} />
         <Route path="/createItem" element={<CreateItem />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/profilePage" element={<ProfilePage />} />
+        <Route path="/profilePage" element={<ProfilePage />} />   
       </Routes>
     </Router>
   );

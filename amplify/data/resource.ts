@@ -20,6 +20,22 @@ const schema = a.schema({
       allow.groups(["STUDENTS"]).to(["read"])
     ]),
 
+
+    UserProfile: a
+    .model({
+      userId: a.string().required(),
+      email: a.string(),
+      username: a.string(),
+      authType: a.string(),
+      profilePath: a.string(),
+      isSubscribed: a.string(),
+    })
+    .identifier(["userId"])
+    .authorization((allow) => [
+      allow.groups(["ADMINS"]).to(["read", "create", "update", "delete"]),
+      allow.groups(["STUDENTS"]).to(["read", "create", "update"])
+    ]),
+
   addUserToGroup: a
     .mutation()
     .arguments({
