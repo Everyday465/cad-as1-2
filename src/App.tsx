@@ -9,15 +9,25 @@ import Test from './pages/test';
 import ItemCatalogPage from './pages/admin/itemCatalogPage';
 import ProfilePage from './pages/userManagement/profilePage';
 
-import { Avatar, Layout, Menu, Dropdown } from 'antd';
+import { Layout, Menu, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 const { Header } = Layout;
 
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../cad-as1-2/amplify/data/resource';
+import { useEffect, useState } from 'react';
+import { StorageImage } from '@aws-amplify/ui-react-storage';
+
+const client = generateClient<Schema>();
+
+const defaultCover = 'https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png';
+
 const App = () => {
 
-  const { signOut } = useAuthenticator();
+  const { user, signOut } = useAuthenticator((context) => [context.user]);
+  const [profilePic, setProfilePic] = useState('');
 
   const menuItems = [
     { label: 'Lost & Found', link: '/itemCatalogPage' },
@@ -29,6 +39,16 @@ const App = () => {
     key: item.label,
     label: <Link to={item.link}>{item.label}</Link>,
   }));
+
+  const getUserProfilePic = async () => {
+    const userId = user?.username
+    const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
+    setProfilePic(data?.profilePath || '')
+  }
+
+  useEffect(() => {
+    getUserProfilePic()
+  }, [profilePic])
 
 
   const avatarMenu = (
@@ -78,24 +98,29 @@ const App = () => {
           />
         </div>
         <Dropdown overlay={avatarMenu} placement="bottomRight" trigger={['click']}>
-          <Avatar
+          <StorageImage
+            alt={defaultCover}
+            path={profilePic || 'uploads/1735195523776_bell__notification.jpg'}
             style={{
+              width: '40px', // Set a small size
+              height: '40px', // Ensure height matches width for a perfect circle
+              borderRadius: '50%', // Make it circular
               cursor: 'pointer',
-              marginRight: 16, // Optional spacing if needed
+              border: '2px solid #ffffff', // Add a border (adjust color and thickness as needed)
+              marginRight: 16, // Optional spacing
+              objectFit: 'cover', // Ensure the image covers the circle without distortion
             }}
-            src="https://api.dicebear.com/7.x/miniavs/svg?seed=avatar"
-            alt="User Avatar"
           />
         </Dropdown>
       </Header>
 
       <Routes>
-        <Route path="/itemCatalogPage" element={<ItemCatalogPage/>} />
+        <Route path="/itemCatalogPage" element={<ItemCatalogPage />} />
         <Route path="/catalogPage" element={<CatalogPage />} />
         <Route path="/catalogPage/:id" element={<ItemDescription />} />
         <Route path="/createItem" element={<CreateItem />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/profilePage" element={<ProfilePage />} />   
+        <Route path="/profilePage" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

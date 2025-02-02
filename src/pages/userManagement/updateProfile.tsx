@@ -1,47 +1,18 @@
-import {
-    updateUserAttribute,
-    type UpdateUserAttributeOutput
-} from 'aws-amplify/auth';
-
-
 import { Form, Input, Modal, Select, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import { uploadData } from 'aws-amplify/storage';
 
-async function handleUpdateUserAttribute(attributeKey: string, value: string) {
-    try {
-        const output = await updateUserAttribute({
-            userAttribute: {
-                attributeKey,
-                value
-            }
-        });
-        handleUpdateUserAttributeNextSteps(output);
-    } catch (error) {
-        console.log(error);
-    }
-}
+import { generateClient } from 'aws-amplify/data';
+import { type Schema } from '../../../amplify/data/resource';
 
-function handleUpdateUserAttributeNextSteps(output: UpdateUserAttributeOutput) {
-    const { nextStep } = output;
+const client = generateClient<Schema>();
 
-    switch (nextStep.updateAttributeStep) {
-        case 'CONFIRM_ATTRIBUTE_WITH_CODE':
-            const codeDeliveryDetails = nextStep.codeDeliveryDetails;
-            console.log(
-                `Confirmation code was sent to ${codeDeliveryDetails?.deliveryMedium}.`
-            );
-            // Collect the confirmation code from the user and pass to confirmUserAttribute.
-            break;
-        case 'DONE':
-            console.log(`attribute was successfully updated.`);
-            break;
-    }
-}
+
 
 interface UpdateProfileModalProps {
     profile: {
+        userId: string;
         username: string;
         profilePath: string;
         authType: string;
@@ -72,52 +43,59 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
             authType: profile.authType,
             isSubscribed: profile.isSubscribed,
         });
-    }, [form, profile]);
+    }, []);
 
     const handleOk = async () => {
         try {
-            const values = await form.validateFields();
-            setConfirmLoading(true);
-
-            // Check if file is selected, if so, upload to S3
-            let filePath = "";
-            if (file) {
-                // Upload the file to S3
-                const fileKey = `profilepics/${Date.now()}_${file.name}`;
-                filePath = fileKey;
-                await uploadData({
-                    path: fileKey,
-                    data: file,
-                    options: {
-                        bucket: 'ca-as1-lostnfound'
-                    }
-                }).result;
+          const values = await form.validateFields();
+          setConfirmLoading(true);
+    
+          // Check if file is selected, if so, upload to S3
+          let filePath = "";
+          if (file) {
+            // Upload the file to S3
+            const fileKey = `profilepics/${Date.now()}_${file.name}`;
+            filePath = fileKey;
+            await uploadData({
+              path: fileKey,
+              data: file,
+              options: {
+                bucket: 'ca-as1-lostnfound'
+              }
+            }).result;
+          }
+    
+          // Update the item using the Amplify client
+          const { errors } = await client.models.UserProfile.update(
+            {
+              userId: profile.userId,
+              username: values.username,
+              authType: values.authType,
+              profilePath: filePath || profile.profilePath,
+              isSubscribed: values.isSubscribed
+            },
+            {
+              authMode: 'userPool',
             }
-
-
-            try {
-                handleUpdateUserAttribute("username", values.username)
-                handleUpdateUserAttribute("auth_type", values.authType)
-                handleUpdateUserAttribute("profile_pic", filePath || values.profilePath)
-                handleUpdateUserAttribute("is_subscribed", values.isSubscribed)
-
-            } catch (error) {
-                message.error('Failed to update item. Please try again.');
-                console.error(error);
-                setConfirmLoading(false);
-                return;
-            }
-
-            message.success('Item updated successfully!');
+          );
+    
+          if (errors) {
+            message.error('Failed to update item. Please try again.');
+            console.error(errors);
             setConfirmLoading(false);
-            onProfileUpdated(); // Refresh the item details
-            onCancel(); // Close the modal
+            return;
+          }
+    
+          message.success('Item updated successfully!');
+          setConfirmLoading(false);
+          onProfileUpdated(); // Refresh the item details
+          onCancel(); // Close the modal
         } catch (error) {
-            console.error(error);
-            message.error('Failed to update item.');
-            setConfirmLoading(false);
+          console.error(error);
+          message.error('Failed to update item.');
+          setConfirmLoading(false);
         }
-    };
+      };
 
     const handleCancel = () => {
         onCancel(); // Close the modal
@@ -143,7 +121,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
 
                 <Form.Item
                     label="Receive Notification"
-                    name="type"
+                    name="isSubscribed"
                     rules={[{ required: true, message: 'Please select subscription status' }]}
                 >
                     <Select>

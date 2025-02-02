@@ -9,6 +9,7 @@ import UpdateProfileModal from './updateProfile';
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
+import UpdatePasswordModal from './changePassword';
 
 // Generate the Amplify client
 const client = generateClient<Schema>();
@@ -72,6 +73,7 @@ const ProfilePage: React.FC = () => {
         if (user.username) {
             try {
                 const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
+
                 if (data) {
                     setUserProfile({
                         userId: data.userId ?? 'Unknown User ID',
@@ -84,16 +86,6 @@ const ProfilePage: React.FC = () => {
                     });
                 } else {
                     createUserProfile();
-                    const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
-                    setUserProfile({
-                        userId: data?.userId ?? 'Unknown User ID',
-                        email: data?.email ?? 'No Email',
-                        username: data?.username ?? 'No Username',
-                        authType: data?.authType ?? 'Unknown Auth Type',
-                        profilePath: data?.profilePath ?? 'Unknown Path',
-                        isSubscribed: data?.isSubscribed ?? 'false',
-
-                    });
                 }
             } catch (error) {
                 console.error('Error fetching item:', error);
@@ -109,10 +101,10 @@ const ProfilePage: React.FC = () => {
         const newUserProfile = await client.models.UserProfile.create({
             userId: userId ?? 'Unknown User ID',
             email: email ?? 'No Email',
-            username: '',
+            username: 'No Username',
             authType: authType,
             profilePath: '',
-            isSubscribed: ''
+            isSubscribed: 'false'
         }, { authMode: 'userPool', });
         console.log("Created new user profile:", newUserProfile);
     }
@@ -136,7 +128,9 @@ const ProfilePage: React.FC = () => {
         getUserProfile();
     }, []); // Empty dependency array ensures this runs only once on mount
 
-
+    useEffect(() => {
+        getUserProfile();
+    }, [userProfile])
 
     return (
         <Layout>
@@ -156,10 +150,12 @@ const ProfilePage: React.FC = () => {
                             alt={defaultCover}
                             path={userProfile?.profilePath || 'uploads/1735195523776_bell__notification.jpg'}
                             style={{
-                                width: '100%',
-                                height: '150px',
-                                objectFit: 'contain',
+                                width: '175px',
+                                height: '175px',
                                 objectPosition: 'center',
+                                borderRadius: '50%', // Make it circular
+                                border: '2px solid #ffffff', // Add a border (adjust color and thickness as needed)
+                                objectFit: 'cover', // Ensure the image covers the circle without distortion
                             }}
                         />
 
@@ -197,7 +193,7 @@ const ProfilePage: React.FC = () => {
                                 {userProfile?.authType || 'Loading...'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Notification Subscription">
-                                {userProfile?.isSubscribed ? 'True' : 'False'}
+                                {userProfile?.isSubscribed || 'Loading...'}
                             </Descriptions.Item>
                         </Descriptions>
                         <Divider
@@ -216,10 +212,11 @@ const ProfilePage: React.FC = () => {
             {updateProfileModalVisible && (
                 <UpdateProfileModal
                     profile={{
+                        userId: userProfile?.userId || '',
                         username: userProfile?.username || '',
                         profilePath: userProfile?.profilePath || '',
                         authType: userProfile?.authType || authType,
-                        isSubscribed: userProfile?.authType || '',
+                        isSubscribed: userProfile?.isSubscribed || '',
                     }}
                     onProfileUpdated={() => {
                         refreshList();
@@ -231,9 +228,12 @@ const ProfilePage: React.FC = () => {
 
             {/* Change Password Modal */}
             {changePasswordModalVisible && (
-                <div>
-                    Change Password
-                </div>
+                <UpdatePasswordModal
+                    onPasswordUpdated={() => {
+                        refreshList();
+                        setChangePasswordModalVisible(false);
+                    }}
+                    onCancel={() => setChangePasswordModalVisible(false)} />
             )}
         </Layout>
     );
