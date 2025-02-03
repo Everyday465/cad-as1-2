@@ -127,7 +127,7 @@ export const Email = (input: any) => {
 													<table class="heading_block block-1" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
 														<tr>
 															<td class="pad">
-																<h1 style="margin: 0; color: #ffffff; direction: ltr; font-family: Arial, Helvetica Neue, Helvetica, sans-serif; font-size: 38px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0; mso-line-height-alt: 45.6px;"><span class="tinyMce-placeholder" style="word-break: break-word;">OceanEyes</span></h1>
+																<h1 style="margin: 0; color: #ffffff; direction: ltr; font-family: Arial, Helvetica Neue, Helvetica, sans-serif; font-size: 38px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0; mso-line-height-alt: 45.6px;"><span class="tinyMce-placeholder" style="word-break: break-word;">NYP Lost & Found</span></h1>
 															</td>
 														</tr>
 													</table>
@@ -180,7 +180,7 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad" style="padding-bottom:25px;padding-left:20px;padding-right:20px;padding-top:10px;">
 																<div style="color:#2f2f2f;font-family:Georgia,Times,'Times New Roman',serif;font-size:34px;line-height:120%;text-align:center;mso-line-height-alt:40.8px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Your appointment has been confirmed!</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">New Lost Item Found!</span></p>
 																</div>
 															</td>
 														</tr>
@@ -219,9 +219,9 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:10px;">
 																<div style="color:#393d47;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Hi <u><strong>${input.customer}</strong></u>,</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Hi <u><strong>${input.userEmail}</strong></u>,</span></p>
 																	<p style="margin: 0; word-break: break-word;">&nbsp;</p>
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Your appointment has been confirmed </span><span style="word-break: break-word;">on ${input.scheduleDate}. </span><span style="word-break: break-word;">Please find the details below:</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">New Item has been found! </span><span style="word-break: break-word;">on ${input.createdAt}. </span><span style="word-break: break-word;">Please find the details below:</span></p>
 																</div>
 															</td>
 														</tr>
@@ -249,7 +249,7 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad">
 																<div style="color:#ffffff;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:18px;line-height:120%;text-align:center;mso-line-height-alt:21.599999999999998px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Appointment Confirmed</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Lost Item</span></p>
 																</div>
 															</td>
 														</tr>
@@ -280,9 +280,9 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad" style="padding-bottom:10px;padding-left:20px;padding-right:20px;padding-top:10px;">
 																<div style="color:#393d47;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Day:</span></strong>${input.scheduleDate}</span></p>
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Time:</span></strong>${input.scheduleDate}</span></p>
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Therapist:</span></strong>${input.therapist}</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Item Name:</span></strong>${input.itemName}</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Item Description:</span></strong>${input.itemDesc}</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Time</span></strong>${input.createdAt}</span></p>
 																</div>
 															</td>
 														</tr>
@@ -300,23 +300,7 @@ export const Email = (input: any) => {
 															</td>
 														</tr>
 													</table>
-													<table class="paragraph_block block-3" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;">
-														<tr>
-															<td class="pad" style="padding-bottom:10px;padding-left:20px;padding-right:20px;padding-top:10px;">
-																<div style="color:#393d47;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; color: #5d77a9;"><strong><span style="word-break: break-word;">Meeting Id</span></strong></span></p>
-																	<p style="margin: 0; word-break: break-word;">${input.id}</p>
-																</div>
-															</td>
-                              <td class="pad" style="padding-bottom:10px;padding-left:20px;padding-right:20px;padding-top:10px;">
-																<div style="color:#393d47;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; color: #5d77a9;"><strong><span style="word-break: break-word;">Meeting Name</span></strong></span></p>
-																	<p style="margin: 0; word-break: break-word;">${input.title}</p>
-																</div>
-															</td>
-														</tr>
-          
-													</table>
+						
 												</td>
 												<td class="column column-3" width="25%" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;">
 													<div class="spacer_block block-1" style="height:5px;line-height:5px;font-size:1px;">&#8202;</div>
@@ -342,7 +326,7 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:10px;">
 																<div style="color:#2f2f2f;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; color: #5d77a9;">Need to make changes on this appointment?</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; color: #5d77a9;">Is it yours?</span></p>
 																	<p style="margin: 0; word-break: break-word;">Lorem ipsum dolor sit amet, consectetur adipiscing quam lectus&nbsp; tincidunt.</p>
 																	<p style="margin: 0; word-break: break-word;">Consectetur adipiscing quam lectus&nbsp; tincidunt.</p>
 																</div>

@@ -81,7 +81,7 @@ const ProfilePage: React.FC = () => {
                         username: data.username ?? 'No Username',
                         authType: data.authType ?? 'Unknown Auth Type',
                         profilePath: data.profilePath ?? 'Unknown Path',
-                        isSubscribed: data.isSubscribed ?? 'false',
+                        isSubscribed: data.isSubscribed ?? 'False',
 
                     });
                 } else {
@@ -105,7 +105,7 @@ const ProfilePage: React.FC = () => {
             username: 'No Username',
             authType: authType,
             profilePath: '',
-            isSubscribed: 'false'
+            isSubscribed: 'False'
         }, { authMode: 'userPool', });
         console.log("Created new user profile:", newUserProfile);
     }

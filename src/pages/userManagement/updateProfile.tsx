@@ -1,4 +1,5 @@
-import { Form, Input, Modal, Select, message, Button, Spin } from 'antd';
+import { Form, Input, Modal, Select, message, Spin, Typography } from 'antd';
+const { Link } = Typography;
 import React, { useEffect, useState } from 'react';
 import { uploadData } from 'aws-amplify/storage';
 import { generateClient } from 'aws-amplify/data';
@@ -25,6 +26,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
     const [file, setFile] = useState<File | null>(null);
     const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
     const [verifying, setVerifying] = useState(false); // Tracks if verification is in progress
+    const [createSub, setCreateSub] = useState<any>(null); // Subscription for creation
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const fileInput = event.target.files;
@@ -41,14 +43,18 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
             const userEmail = profile.userEmail;
             const response = await client.queries.checkEmailSESStatus({ userEmail }, { authMode: 'userPool' });
 
-            console.log("response data"+ response.data)
-            const data = response.data as { VerificationStatus?: string };
-            if (data.VerificationStatus === "Success") {
-                setEmailVerified(true);
-                setVerifying(false); // Stop loading once verified
+            if (response.data && typeof response.data === 'string') {
+                const cleanData = JSON.parse(response.data); // This is safe now
+                if (cleanData === "SUCCESS") {
+                    setEmailVerified(true);
+                    console.log("email success" + emailVerified)
+                    setVerifying(false); // Stop loading once verified
+                }
             } else {
+                console.error("Received invalid or null data:", response.data);
                 setEmailVerified(false);
             }
+            
         } catch (error) {
             console.error("Error checking SES verification status:", error);
             setEmailVerified(false);
@@ -61,12 +67,11 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
             authType: profile.authType,
             isSubscribed: profile.isSubscribed,
         });
-        console.log("response data test ")
-
+        console.log("start" + emailVerified)
         fetchEmailVerificationStatus();
-    },[]);
+    }, []);
 
-    // **Poll email verification status**
+
     useEffect(() => {
         if (verifying) {
             const interval = setInterval(() => {
@@ -88,6 +93,42 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
             console.error("Error verifying email:", error);
             message.error("Failed to send verification email.");
             setVerifying(false);
+        }
+    };
+
+    // **Handle Subscription Logic**
+    const handleSubscription = (isSubscribed: boolean) => {
+        if (isSubscribed) {
+            // Create subscriptions
+            const createSubscription = client.models.Item.onCreate({ authMode: 'userPool' }).subscribe({
+                next: async (data) => {
+                    try {
+                        console.log("Item created, sending notification...", data);
+
+                        // Call the sendNotification API when an item is created
+                        await client.queries.sendNotification({
+                            itemId: data.id,
+                            itemName: data.itemName,
+                            itemDesc: data.itemDesc,
+                            userEmail: profile.userEmail, // Use the user's email from the profile
+                            createdAt: data.createdAt,
+                        }, { authMode: 'userPool' });
+            
+                        console.log("Notification sent for item creation:", data);
+                    } catch (error) {
+                        console.error("Error sending notification:", error);
+                    }
+                },
+                error: (error) => console.warn("Subscription error (create):", error),
+            });
+            setCreateSub(createSubscription);
+
+        } else {
+            // Unsubscribe from existing subscriptions
+            if (createSub) {
+                createSub.unsubscribe();
+                setCreateSub(null);
+            }
         }
     };
 
@@ -122,6 +163,10 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
                 return;
             }
 
+            // Handle subscription based on isSubscribed value
+            console.log("issubscribed value" + values.isSubscribed)
+            handleSubscription(values.isSubscribed === "True");
+
             message.success('Item updated successfully!');
             setConfirmLoading(false);
             onProfileUpdated();
@@ -155,18 +200,20 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
                         <Select.Option value="True">True</Select.Option>
                         <Select.Option value="False">False</Select.Option>
                     </Select>
+                    {!emailVerified && (
+                        <div style={{ marginTop: 8, color: 'red', display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <p style={{ margin: 0 }}>Your email is not verified for notifications.</p>
+                            <Link
+                                onClick={handleVerifyEmail}
+                                disabled={verifying}
+                                style={{ cursor: verifying ? 'not-allowed' : 'pointer' }}
+                            >
+                                Verify Email
+                            </Link>
+                            {verifying && <Spin size="small" />}
+                        </div>
+                    )}
                 </Form.Item>
-
-                {!emailVerified && (
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <p style={{ color: 'red' }}>Your email is not verified for notifications.</p>
-                        <Button type="primary" onClick={handleVerifyEmail} disabled={verifying}>
-                            Verify Email
-                        </Button>
-                        {verifying && <Spin size="small" />}
-                    </div>
-                )}
-
                 <Form.Item label="Auth Type" name="authpe">
                     <Select disabled>
                         <Select.Option value="Admin">Admin</Select.Option>
