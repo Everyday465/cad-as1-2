@@ -51,6 +51,15 @@ backend.auth.resources.groups["ADMINS"].role.addToPrincipalPolicy(
   })
 );
 
+backend.auth.resources.groups["STUDENTS"].role.addToPrincipalPolicy(
+  new iam.PolicyStatement({
+    actions: [
+      "rekognition:DetectLabels",
+    ],
+    resources: ["*"],
+  })
+);
+
 // Configure Predictions category for label detection
 backend.addOutput({
   custom: {
