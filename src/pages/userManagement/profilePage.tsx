@@ -97,6 +97,7 @@ const ProfilePage: React.FC = () => {
     const createUserProfile = async () => {
         const userId = user?.username
         const email = userAttributes?.email
+        console.log("user attribute"+userAttributes?.email);
         // Make the API call to create a new item
         const newUserProfile = await client.models.UserProfile.create({
             userId: userId ?? 'Unknown User ID',

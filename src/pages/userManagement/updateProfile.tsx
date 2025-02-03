@@ -33,12 +33,15 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
         }
     };
 
+
     // **Check SES Email Verification Status**
     const fetchEmailVerificationStatus = async () => {
+        console.log("response data hi ")
         try {
             const userEmail = profile.userEmail;
             const response = await client.queries.checkEmailSESStatus({ userEmail }, { authMode: 'userPool' });
 
+            console.log("response data"+ response.data)
             const data = response.data as { VerificationStatus?: string };
             if (data.VerificationStatus === "Success") {
                 setEmailVerified(true);
@@ -58,9 +61,10 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
             authType: profile.authType,
             isSubscribed: profile.isSubscribed,
         });
+        console.log("response data test ")
 
         fetchEmailVerificationStatus();
-    }, []);
+    },[]);
 
     // **Poll email verification status**
     useEffect(() => {
@@ -143,7 +147,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
         >
             <Form form={form} layout="vertical">
                 <Form.Item label="Username" name="username" rules={[{ required: true, message: 'Please enter your username' }]}>
-                    <Input disabled />
+                    <Input />
                 </Form.Item>
 
                 <Form.Item label="Receive Notification" name="isSubscribed">
@@ -163,7 +167,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
                     </div>
                 )}
 
-                <Form.Item label="Auth Type" name="authType">
+                <Form.Item label="Auth Type" name="authpe">
                     <Select disabled>
                         <Select.Option value="Admin">Admin</Select.Option>
                         <Select.Option value="Student">Student</Select.Option>
