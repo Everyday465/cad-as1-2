@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { Button, Form, Input, Select, Layout, Breadcrumb, message, theme } from "antd";
 import { uploadData } from 'aws-amplify/storage';
@@ -37,81 +38,78 @@ const App: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log("Submitting values:", values);
+        console.log("Submitting values:", values);
 
-      const { itemName, itemDesc, itemType, itemStatus, foundLostBy } = values;
+        const { itemName, itemDesc, itemType, itemStatus, foundLostBy } = values;
 
-      // Check if file is selected, if so, upload to S3
-      let filePath = "";
-      let labels = [];
+        // Check if file is selected, if so, upload to S3
+        let filePath = "";
+        let labels = [];
 
-      if (file) {
-        // Upload the file to S3
-        const fileKey = `uploads/${Date.now()}_${file.name}`;
-        filePath = fileKey;
-        await uploadData({
-          path: fileKey,
-          data: file,
-          options: {
-            bucket: 'ca-as1-lostnfound'
-          }
-        }).result;
+        if (file) {
+            // Upload the file to S3
+            const fileKey = `uploads/${Date.now()}_${file.name}`;
+            filePath = fileKey;
+            await uploadData({
+                path: fileKey,
+                data: file,
+                options: {
+                    bucket: 'ca-as1-lostnfound'
+                }
+            }).result;
 
-        // Call Amplify Predictions to identify labels from the uploaded image
-        const predictionResponse = await Predictions.identify({
-          labels: {
-            source: {
-              file
-            },
-            type: 'LABELS'  // Use the appropriate type for label prediction
-          }
-        });
+            // Call Amplify Predictions to identify labels from the uploaded image
+            const predictionResponse = await Predictions.identify({
+                labels: {
+                    source: {
+                        file
+                    },
+                    type: 'LABELS'  // Use the appropriate type for label prediction
+                }
+            });
 
-        // Extract labels from the response
-        if (predictionResponse?.labels) {
-          labels = predictionResponse.labels.map((label: any) => label.name);
-        } else {
-          // Fallback if no labels were detected
-          console.log("No labels detected.");
-          labels = [];
+            // Extract labels from the response
+            if (predictionResponse?.labels) {
+                labels = predictionResponse.labels.map((label: any) => label.name);
+            } else {
+                // Fallback if no labels were detected
+                console.log("No labels detected.");
+                labels = [];
+            }
         }
 
-        // If you want to store them as JSON, you can use JSON.stringify
-        // labels = JSON.stringify(labels);
-      }
+        // Log if client.models.Item is available
+        console.log(client?.models?.Item);
 
-      // Log if client.models.Item is available
-      console.log(client?.models?.Item);
+        if (!client?.models?.Item) {
+            throw new Error("Item model is not available in the client.");
+        }
 
-      if (!client?.models?.Item) {
-        throw new Error("Item model is not available in the client.");
-      }
+        // Make the API call to create a new item
+        const newItem = await client.models.Item.create({
+            itemName,
+            itemDesc,
+            itemType,
+            itemStatus,
+            foundLostBy,
+            imagePath: filePath,
+            labels: JSON.stringify(labels)  // Add labels here
+        },
+            {
+                authMode: 'userPool',
+            });
 
-      // Make the API call to create a new item
-      const newItem = await client.models.Item.create({
-        itemName,
-        itemDesc,
-        itemType,
-        itemStatus,
-        foundLostBy,
-        imagePath: filePath,
-        labels: JSON.stringify(labels)  // Add labels here
-      },
-        {
-          authMode: 'userPool',
-        });
+        console.log("Created new item:", newItem);
 
-      console.log("Created new item:", newItem);
-
-      message.success("Item added successfully!");
-      form.resetFields(); // Clear the form after submission
+        message.success("Item added successfully!");
+        form.resetFields(); // Clear the form after submission
     } catch (error) {
-      console.error("Error adding item:", error);
-      message.error("Failed to add item. Please try again.");
+        console.error("Error adding item:", error);
+        message.error("Failed to add item. Please try again.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   return (
     <Layout>

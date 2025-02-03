@@ -38,3 +38,33 @@ const backend = defineBackend({
   verifyEmailSESLambda.addToRolePolicy(sesPolicyStatement);
   notificationLambda.addToRolePolicy(sesPolicyStatement);
 })();
+
+//amplify prediction
+(() => {
+  // Grant permission to use AWS Rekognition for label detection
+backend.auth.resources.authenticatedUserIamRole.addToPrincipalPolicy(
+  new iam.PolicyStatement({
+    actions: [
+      "rekognition:DetectLabels",
+    ],
+    resources: ["*"],
+  })
+);
+
+// Configure Predictions category for label detection
+backend.addOutput({
+  custom: {
+    Predictions: {
+      identify: {
+        identifyLabels: {
+          defaults: {
+            type: "ALL",
+          },
+          proxy: false,
+          region: backend.auth.stack.region,
+        },
+      },
+    },
+  },
+});
+})();
