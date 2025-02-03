@@ -110,6 +110,7 @@ const UpdateProfileModal: React.FC<UpdateProfileModalProps> = ({ profile, onProf
                             itemId: data.id,
                             itemName: data.itemName,
                             itemDesc: data.itemDesc,
+                            username: profile.username,
                             userEmail: profile.userEmail, // Use the user's email from the profile
                             createdAt: data.createdAt,
                         }, { authMode: 'userPool' });

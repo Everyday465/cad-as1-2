@@ -25,31 +25,30 @@ const client = generateClient<Schema>();
 const defaultCover = 'https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png';
 
 const App = () => {
-
   const { user, signOut } = useAuthenticator((context) => [context.user]);
   const [profilePic, setProfilePic] = useState('');
+  const [username, setUsername] = useState('User');
 
   const menuItems = [
     { label: 'Lost & Found', link: '/itemCatalogPage' },
     { label: 'I found/lost something', link: '/createItem' },
-    { label: 'Check Database', link: '/i-lost-something' },
   ];
 
   const items: MenuProps['items'] = menuItems.map((item) => ({
     key: item.label,
-    label: <Link to={item.link}>{item.label}</Link>,
+    label: <Link to={item.link} style={{ color: 'black' }}>{item.label}</Link>,
   }));
 
   const getUserProfilePic = async () => {
-    const userId = user?.username
+    const userId = user?.username;
     const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
-    setProfilePic(data?.profilePath || '')
-  }
+    setProfilePic(data?.profilePath || '');
+    setUsername(data?.username || '');
+  };
 
   useEffect(() => {
-    getUserProfilePic()
-  }, [profilePic])
-
+    getUserProfilePic();
+  }, [profilePic]);
 
   const avatarMenu = (
     <Menu
@@ -68,8 +67,8 @@ const App = () => {
         },
       ]}
     />
-
   );
+
   return (
     <Router>
       <Header
@@ -81,26 +80,36 @@ const App = () => {
           display: 'flex',
           alignItems: 'center',
           padding: 0, // Remove default padding
+          backgroundColor: 'white',
         }}
       >
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <img
+            src="https://sgwiki.com/images/thumb/0/01/Nanyang_Polytechnic_Logo.png/300px-Nanyang_Polytechnic_Logo.png"
+            style={{ marginLeft: '100px', marginRight: '50px', height: '100%', width: '200px' }}
+            alt="Logo"
+          />
           <Menu
-            theme="dark"
+            theme="light" // Use "light" theme to avoid dark background
             mode="horizontal"
-            defaultSelectedKeys={['2']}
+            defaultSelectedKeys={[]} // No default selected key
+            selectedKeys={[]} // No selected key
             items={items}
             style={{
               flex: 1,
               minWidth: 0,
               margin: 0, // Remove margin
               padding: 0, // Remove padding
+              backgroundColor: 'white',
+              borderBottom: 'none', // Remove border
             }}
           />
         </div>
+        <p style={{ fontSize: '14px', marginRight: '15px' }}>Welcome, {username}</p>
         <Dropdown overlay={avatarMenu} placement="bottomRight" trigger={['click']}>
           <StorageImage
             alt={defaultCover}
-            path={profilePic || 'uploads/1735195523776_bell__notification.jpg'}
+            path={profilePic || 'uploads/default_user_profile.jpg'}
             style={{
               width: '40px', // Set a small size
               height: '40px', // Ensure height matches width for a perfect circle
@@ -109,6 +118,7 @@ const App = () => {
               border: '2px solid #ffffff', // Add a border (adjust color and thickness as needed)
               marginRight: 16, // Optional spacing
               objectFit: 'cover', // Ensure the image covers the circle without distortion
+              backgroundColor: 'white',
             }}
           />
         </Dropdown>

@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, message } from 'antd';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '../../../amplify/data/resource';
 import { uploadData } from 'aws-amplify/storage';
+import { Predictions } from '@aws-amplify/predictions';
 
 const client = generateClient<Schema>();
 
@@ -14,6 +15,7 @@ interface UpdateModalProps {
     status: string;
     foundLostBy: string;
     imagePath: string;
+    labels: string;
     id: string;
     updatedAt?: string;
   };
@@ -24,12 +26,38 @@ interface UpdateModalProps {
 const UpdateModal: React.FC<UpdateModalProps> = ({ item, onItemUpdated, onCancel }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [form] = Form.useForm();
-  const [file, setFile] = useState<File | null>(null); // File state
+  const [file, setFile] = useState<File | null>(null);
+  const [predictedLabels, setPredictedLabels] = useState<string[]>([]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target.files;
     if (fileInput && fileInput[0]) {
-      setFile(fileInput[0]); // Set the selected file
+      setFile(fileInput[0]);
+      handleLabelPrediction(fileInput[0]); // Predict labels when a new image is uploaded
+    }
+  };
+
+  // Function to get labels from image using AWS Predictions
+  const handleLabelPrediction = async (file: File) => {
+    try {
+      message.loading('Analyzing image for labels...');
+      const result = await Predictions.identify({
+        labels: {
+          source: { file },
+          type: "LABELS",
+        },
+      });
+
+      if (result.labels && result.labels.length > 0) {
+        const newLabels = result.labels.map(label => label.name).filter((name): name is string => !!name);
+        setPredictedLabels(newLabels);
+        message.success('Image analyzed successfully!');
+      } else {
+        message.warning('No labels detected.');
+      }
+    } catch (error) {
+      console.error('Error detecting labels:', error);
+      message.error('Failed to analyze image.');
     }
   };
 
@@ -48,22 +76,20 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ item, onItemUpdated, onCancel
       const values = await form.validateFields();
       setConfirmLoading(true);
 
-      // Check if file is selected, if so, upload to S3
       let filePath = "";
       if (file) {
-        // Upload the file to S3
         const fileKey = `uploads/${Date.now()}_${file.name}`;
         filePath = fileKey;
         await uploadData({
           path: fileKey,
           data: file,
-          options: {
-            bucket: 'ca-as1-lostnfound'
-          }
+          options: { bucket: 'ca-as1-lostnfound' },
         }).result;
       }
 
-      // Update the item using the Amplify client
+      // Use predicted labels if available, otherwise keep the old ones
+      const updatedLabels = predictedLabels.length > 0 ? predictedLabels : JSON.parse(item.labels);
+
       const { errors } = await client.models.Item.update(
         {
           id: item.id,
@@ -72,11 +98,10 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ item, onItemUpdated, onCancel
           itemType: values.type,
           itemStatus: values.status,
           foundLostBy: values.foundLostBy,
-          imagePath: filePath || item.imagePath, // Use the existing image path if no new file is uploaded
+          imagePath: filePath || item.imagePath,
+          labels: JSON.stringify(updatedLabels), // Save new labels if available
         },
-        {
-          authMode: 'userPool',
-        }
+        { authMode: 'userPool' }
       );
 
       if (errors) {
@@ -88,8 +113,8 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ item, onItemUpdated, onCancel
 
       message.success('Item updated successfully!');
       setConfirmLoading(false);
-      onItemUpdated(); // Refresh the item details
-      onCancel(); // Close the modal
+      onItemUpdated();
+      onCancel();
     } catch (error) {
       console.error(error);
       message.error('Failed to update item.');
@@ -98,7 +123,7 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ item, onItemUpdated, onCancel
   };
 
   const handleCancel = () => {
-    onCancel(); // Close the modal
+    onCancel();
   };
 
   return (
@@ -110,61 +135,45 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ item, onItemUpdated, onCancel
       onCancel={handleCancel}
     >
       <Form form={form} layout="vertical">
-        <Form.Item
-          label="Item Name"
-          name="itemName"
-          rules={[{ required: true, message: 'Please enter the item name' }]}
-        >
+        <Form.Item label="Item Name" name="itemName" rules={[{ required: true, message: 'Please enter the item name' }]}>
           <Input />
         </Form.Item>
 
-        <Form.Item
-          label="Description"
-          name="description"
-          rules={[{ required: true, message: 'Please enter the description' }]}
-        >
+        <Form.Item label="Description" name="description" rules={[{ required: true, message: 'Please enter the description' }]}>
           <Input.TextArea rows={4} />
         </Form.Item>
 
-        <Form.Item
-          label="Item Type"
-          name="type"
-          rules={[{ required: true, message: 'Please select the item type' }]}
-        >
+        <Form.Item label="Item Type" name="type" rules={[{ required: true, message: 'Please select the item type' }]}>
           <Select>
             <Select.Option value="Found">Found Item</Select.Option>
             <Select.Option value="Lost">Lost Item</Select.Option>
           </Select>
         </Form.Item>
 
-        <Form.Item
-          label="Status"
-          name="status"
-          rules={[{ required: true, message: 'Please select a status' }]}
-        >
+        <Form.Item label="Status" name="status" rules={[{ required: true, message: 'Please select a status' }]}>
           <Select>
             <Select.Option value="Unclaimed">Unclaimed</Select.Option>
             <Select.Option value="Claimed">Claimed</Select.Option>
           </Select>
         </Form.Item>
 
-        <Form.Item
-          label="Found/Lost By"
-          name="foundLostBy"
-          rules={[{ required: true, message: 'Please enter who found/lost the item' }]}
-        >
+        <Form.Item label="Found/Lost By" name="foundLostBy" rules={[{ required: true, message: 'Please enter who found/lost the item' }]}>
           <Input />
         </Form.Item>
 
-        <Form.Item
-          label="Item Image"
-        >
-          <input
-            type="file"
-            onChange={handleFileChange}
-            accept="image/*"
-          />
+        <Form.Item label="Item Image">
+          <input type="file" onChange={handleFileChange} accept="image/*" />
         </Form.Item>
+
+        {predictedLabels.length > 0 && (
+          <Form.Item label="Predicted Labels">
+            {predictedLabels.map((label, index) => (
+              <span key={index} style={{ marginRight: 5, padding: "5px 10px", background: "#eee", borderRadius: "5px" }}>
+                {label}
+              </span>
+            ))}
+          </Form.Item>
+        )}
       </Form>
     </Modal>
   );

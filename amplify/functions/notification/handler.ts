@@ -5,7 +5,7 @@ import { Email } from "../utils/notification-email";
 
 let client: SESv2Client;
 export const handler = async (event: any) => {
-    const { itemId, itemName, itemDesc, userEmail, createdAt } = event.arguments;
+    const { itemId, itemName, itemDesc, username, userEmail, createdAt } = event.arguments;
     if (!client) client = new SESv2Client({});
     
 
@@ -24,8 +24,10 @@ export const handler = async (event: any) => {
                     Email(
                         {
                             id:itemId,
+                            username: username,
                             itemName:itemName,
                             itemDesc:itemDesc,
+                            userEmail:userEmail,
                             createdAt:createdAt
                         
                     }

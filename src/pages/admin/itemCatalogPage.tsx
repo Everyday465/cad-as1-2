@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Breadcrumb, Layout, List, theme, Input, Select, Pagination, Button, Space } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Breadcrumb, Layout, List, theme, Input, Select, Pagination, Button, Space, Modal,  message } from 'antd';
+import { CameraOutlined, CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Predictions } from '@aws-amplify/predictions';
 
 const { Search } = Input;
 const { Content, Footer } = Layout;
@@ -20,22 +21,25 @@ const client = generateClient<Schema>();
 const defaultCover = 'https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png';
 
 const App: React.FC = () => {
-
-    //misc variables
+    // Misc variables
     const [loading, setLoading] = useState(false);
     const [items, setItems] = useState<any[]>([]);
     const [filteredItems, setFilteredItems] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
-    //modal variables
+    // Modal variables
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [updateItemModalVisible, setUpdateItemModalVisible] = useState(false);
     const [createItemModalVisible, setCreateItemModalVisible] = useState(false);
     const [deleteItemModalVisible, setDeleteItemModalVisible] = useState(false);
+    const [cameraModalVisible, setCameraModalVisible] = useState(false);
 
-    //user variables
+    // User variables
     const { user } = useAuthenticator((context) => [context.user]);
+
+    // File upload state
+    const [file, setFile] = useState<File | null>(null);
 
     const onSearch = (value: string) => {
         const searchQuery = value.toLowerCase();
@@ -91,6 +95,54 @@ const App: React.FC = () => {
         }
     };
 
+    const handleFileUpload = (event: any) => {
+        setFile(event.target.files[0]);
+        return false; // Prevent default upload behavior
+    };
+
+    const analyzeImage = async () => {
+        if (!file) {
+            message.error('Please upload an image first.');
+            return;
+        }
+
+        try {
+            const result = await Predictions.identify({
+                labels: {
+                    source: {
+                        file,
+                    },
+                    type: 'LABELS',
+                },
+            });
+
+            const labels = result.labels?.map((label: any) => label.name) || [];
+            
+            filterItemsByLabels(labels);
+            setCameraModalVisible(false);
+            message.success('Image analyzed successfully!');
+        } catch (error) {
+            console.error('Error analyzing image:', error);
+            message.error('Failed to analyze image.');
+        }
+    };
+
+    const filterItemsByLabels = (labels: string[]) => {
+        console.log("labels ", labels);
+        console.log("items", items[0].labels);
+    
+        const filtered = items.filter(item => {
+            // Parse item.labels into an array of strings
+            const itemLabels = JSON.parse(item.labels);
+            console.log(" items indiv", item);
+            console.log("json labels", itemLabels);
+    
+            // Check if any label from the input array exists in itemLabels
+            return labels.some(label => itemLabels.includes(label));
+        });
+    
+        setFilteredItems(filtered);
+    };
 
     useEffect(() => {
         refreshList();
@@ -100,7 +152,7 @@ const App: React.FC = () => {
         <Layout>
             <Content style={{ padding: '0 48px' }}>
                 <Breadcrumb style={{ margin: '16px 0' }}>
-                    <Breadcrumb.Item>Found Items</Breadcrumb.Item>
+                    <Breadcrumb.Item>Lost & Found Items</Breadcrumb.Item>
                 </Breadcrumb>
                 <div
                     style={{
@@ -112,7 +164,7 @@ const App: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                         <div style={{ display: 'flex', gap: 16 }}>
                             <Search
-                                placeholder="Search by title or status"
+                                placeholder="Search by title or description"
                                 allowClear
                                 onSearch={onSearch}
                                 style={{ width: 400 }}
@@ -127,6 +179,9 @@ const App: React.FC = () => {
                                 <Select.Option value="Claimed">Claimed</Select.Option>
                                 <Select.Option value="Unclaimed">Unclaimed</Select.Option>
                             </Select>
+                            <Button onClick={() => setCameraModalVisible(true)}>
+                                <CameraOutlined />
+                            </Button>
                         </div>
                         <Button
                             type="primary"
@@ -214,7 +269,6 @@ const App: React.FC = () => {
                 Lost&Found ©{new Date().getFullYear()} Created by Elijah
             </Footer>
 
-
             {/* Create Modal */}
             {createItemModalVisible && (
                 <CreateModal
@@ -225,7 +279,6 @@ const App: React.FC = () => {
                     onCancel={() => setCreateItemModalVisible(false)} // Close modal when canceled
                 />
             )}
-
 
             {/* Update Modal */}
             {updateItemModalVisible && selectedItem && (
@@ -238,6 +291,7 @@ const App: React.FC = () => {
                         status: selectedItem.itemStatus,
                         foundLostBy: selectedItem.foundLostBy,
                         imagePath: selectedItem.imagePath,
+                        labels: selectedItem.labels
                     }}
                     onItemUpdated={() => {
                         refreshList();
@@ -257,6 +311,25 @@ const App: React.FC = () => {
                     }}
                     onCancel={() => setDeleteItemModalVisible(false)} // Close modal when canceled
                 />
+            )}
+
+            {/* Camera Modal */}
+            {cameraModalVisible && (
+                <Modal
+                    title="Upload Image for Analysis"
+                    visible={cameraModalVisible}
+                    onCancel={() => setCameraModalVisible(false)}
+                    footer={[
+                        <Button key="cancel" onClick={() => setCameraModalVisible(false)}>
+                            Cancel
+                        </Button>,
+                        <Button key="analyze" type="primary" onClick={analyzeImage}>
+                            Analyze
+                        </Button>,
+                    ]}
+                >
+                    <input type="file" accept="image/*" onChange={handleFileUpload}></input>
+                </Modal>
             )}
         </Layout>
     );

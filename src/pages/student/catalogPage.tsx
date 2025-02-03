@@ -216,6 +216,7 @@ const App: React.FC = () => {
                         status: selectedItem.itemStatus,
                         foundLostBy: selectedItem.foundLostBy,
                         imagePath: selectedItem.imagePath,
+                        labels: selectedItem.labels
                     }}
                     onItemUpdated={() => {
                         refreshList();

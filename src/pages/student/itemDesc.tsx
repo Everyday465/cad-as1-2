@@ -20,6 +20,7 @@ interface Item {
   status: string;
   foundLostBy: string;
   imagePath: string;
+  labels: string[];
   id: string;
   createdAt?: string;
   updatedAt?: string;
@@ -43,6 +44,14 @@ const App: React.FC = () => {
       try {
         const { data } = await client.models.Item.get({ id }, { authMode: 'userPool' });
         if (data) {
+          // Clean up the labels string to remove unwanted characters
+          const cleanedLabels = data.labels
+            ? data.labels
+              .replace(/[\[\]"]/g, '') // Remove [, ], and "
+              .split(',') // Split into an array
+              .map((label) => label.trim()) // Trim whitespace
+            : [];
+
           setItem({
             itemName: data.itemName ?? 'Unknown Item Name',
             description: data.itemDesc ?? 'No Description',
@@ -50,6 +59,7 @@ const App: React.FC = () => {
             status: data.itemStatus ?? 'Unknown Status',
             foundLostBy: data.foundLostBy ?? 'Unknown',
             imagePath: data.imagePath ?? 'unknown',
+            labels: cleanedLabels, // Use the cleaned labels
             id: data.id,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -94,7 +104,7 @@ const App: React.FC = () => {
       <Content style={{ padding: '0 48px' }}>
         <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item>
-            <Link to={'/catalogPage'}>Lost & Found</Link>
+            <Link to={'/itemCatalogPage'}>Lost & Found</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{id}</Breadcrumb.Item>
         </Breadcrumb>
@@ -144,6 +154,11 @@ const App: React.FC = () => {
             <Descriptions.Item label="Description">{item.description}</Descriptions.Item>
             <Descriptions.Item label="Status">{item.status}</Descriptions.Item>
             <Descriptions.Item label="Found/Lost by">{item.foundLostBy}</Descriptions.Item>
+            <Descriptions.Item label="Tags">
+              {item.labels.slice(0, 5).map((label, index) => (
+                <Tag key={index}>{label}</Tag>
+              ))}
+            </Descriptions.Item>
           </Descriptions>
         </div>
       </Content>
@@ -162,7 +177,7 @@ const App: React.FC = () => {
             status: item.status,
             foundLostBy: item.foundLostBy,
             imagePath: item.imagePath,
-
+            labels: JSON.stringify(item.labels)
           }}
           onItemUpdated={() => {
             fetchItem();

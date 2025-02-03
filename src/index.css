@@ -1,3 +1,21 @@
 body {
   margin: 0;
 }
+
+.divbody {
+  background: url('https://thesmartlocal.com/wp-content/uploads/2019/07/image4-2.jpg') no-repeat center center fixed ;
+  background-size: cover;
+  position: relative;
+}
+
+
+
+
+
+.authenticator-container {
+  position: relative;
+  z-index: 1;
+
+  padding: 150px;
+  border-radius: 10px;
+}

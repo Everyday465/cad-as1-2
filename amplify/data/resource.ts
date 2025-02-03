@@ -57,6 +57,7 @@ const schema = a.schema({
       itemId: a.string(),
       itemName: a.string(),
       itemDesc: a.string(),
+      username: a.string(),
       userEmail: a.string(),
       createdAt: a.string(),
     })

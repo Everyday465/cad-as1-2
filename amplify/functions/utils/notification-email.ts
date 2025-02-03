@@ -219,9 +219,9 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:10px;">
 																<div style="color:#393d47;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Hi <u><strong>${input.userEmail}</strong></u>,</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">Hi <u><strong>${input.username}</strong></u>,</span></p>
 																	<p style="margin: 0; word-break: break-word;">&nbsp;</p>
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">New Item has been found! </span><span style="word-break: break-word;">on ${input.createdAt}. </span><span style="word-break: break-word;">Please find the details below:</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;">New Item has been found </span><span style="word-break: break-word;">on ${input.createdAt}. </span><span style="word-break: break-word;">Please check the details below:</span></p>
 																</div>
 															</td>
 														</tr>
@@ -280,9 +280,9 @@ export const Email = (input: any) => {
 														<tr>
 															<td class="pad" style="padding-bottom:10px;padding-left:20px;padding-right:20px;padding-top:10px;">
 																<div style="color:#393d47;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Item Name:</span></strong>${input.itemName}</span></p>
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Item Description:</span></strong>${input.itemDesc}</span></p>
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Time</span></strong>${input.createdAt}</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Item Name: </span></strong>${input.itemName}</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Item Description: </span></strong>${input.itemDesc}</span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word;"><strong><span style="word-break: break-word; color: #5d77a9;">Time: </span></strong>${input.createdAt}</span></p>
 																</div>
 															</td>
 														</tr>
@@ -327,8 +327,8 @@ export const Email = (input: any) => {
 															<td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:10px;">
 																<div style="color:#2f2f2f;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:16px;line-height:150%;text-align:left;mso-line-height-alt:24px;">
 																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; color: #5d77a9;">Is it yours?</span></p>
-																	<p style="margin: 0; word-break: break-word;">Lorem ipsum dolor sit amet, consectetur adipiscing quam lectus&nbsp; tincidunt.</p>
-																	<p style="margin: 0; word-break: break-word;">Consectetur adipiscing quam lectus&nbsp; tincidunt.</p>
+																	<p style="margin: 0; word-break: break-word;">Please go to the nearest Lost & Found department and collect.</p>
+																	<p style="margin: 0; word-break: break-word;">You will be subjected to verification.</p>
 																</div>
 															</td>
 														</tr>

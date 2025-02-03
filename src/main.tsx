@@ -12,12 +12,12 @@ import { Buffer } from 'buffer';
 
 // Polyfill global object
 if (typeof window.global === 'undefined') {
-    window.global = global;
+  window.global = global;
 }
 
 // Polyfill Buffer
 if (typeof window.Buffer === 'undefined') {
-    window.Buffer = Buffer;
+  window.Buffer = Buffer;
 }
 
 
@@ -29,10 +29,11 @@ Amplify.configure({
 
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  
-  <React.StrictMode>
-    <Authenticator>
-      <App />
-    </Authenticator>
-  </React.StrictMode>
+  <div className="divbody">
+    <React.StrictMode>
+      <Authenticator className="authenticator-container">
+        <App />
+      </Authenticator>
+    </React.StrictMode>
+  </div>
 );

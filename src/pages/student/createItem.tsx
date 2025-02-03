@@ -134,6 +134,7 @@ const App: React.FC = () => {
             <Form.Item
               label="Item Name"
               name="itemName"
+              
               rules={[{ required: true, message: "Please enter the item name" }]}
             >
               <Input />
@@ -186,7 +187,7 @@ const App: React.FC = () => {
               </input>
             </Form.Item>
 
-            <Form.Item style={{ textAlign: "center" }}>
+            <Form.Item style={{ textAlign: "right" , marginLeft:'40%'}}>
               <Button type="primary" htmlType="submit" loading={loading}>
                 Add Item
               </Button>
