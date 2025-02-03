@@ -42,7 +42,7 @@ const backend = defineBackend({
 //amplify prediction
 (() => {
   // Grant permission to use AWS Rekognition for label detection
-backend.auth.resources.authenticatedUserIamRole.addToPrincipalPolicy(
+backend.auth.resources.groups["ADMINS"].role.addToPrincipalPolicy(
   new iam.PolicyStatement({
     actions: [
       "rekognition:DetectLabels",

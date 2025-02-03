@@ -22,7 +22,10 @@ if (typeof window.Buffer === 'undefined') {
 
 
 Amplify.configure(outputs);
-
+Amplify.configure({
+  ...Amplify.getConfig(),
+  Predictions: outputs.custom.Predictions,
+});
 
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
