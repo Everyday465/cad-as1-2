@@ -10,18 +10,19 @@ The section below creates two database tables: "Todo" and "Notes".
 const schema = a.schema({
 
   Item: a
-    .model({
-      itemName: a.string(),
-      itemDesc: a.string(),
-      itemType: a.string(),
-      itemStatus: a.string(),
-      foundLostBy: a.string(),
-      imagePath: a.string(),
-    })
-    .authorization((allow) => [
-      allow.groups(["ADMINS"]).to(["read", "create", "update", "delete"]),
-      allow.groups(["STUDENTS"]).to(["read"])
-    ]),
+  .model({
+    itemName: a.string(),
+    itemDesc: a.string(),
+    itemType: a.string(),
+    itemStatus: a.string(),
+    foundLostBy: a.string(),
+    imagePath: a.string(),
+    labels: a.string(),
+  })
+  .authorization((allow) => [
+    allow.groups(["ADMINS"]).to(["read", "create", "update", "delete"]),
+    allow.groups(["STUDENTS"]).to(["read"]),
+  ]),
 
 
   UserProfile: a

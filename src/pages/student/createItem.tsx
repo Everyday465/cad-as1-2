@@ -4,6 +4,7 @@ import { Button, Form, Input, Select, Layout, Breadcrumb, message, theme } from 
 import { uploadData } from 'aws-amplify/storage';
 import type { Schema } from "../../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
+import { Predictions } from '@aws-amplify/predictions';
 
 const { TextArea } = Input;
 const { Content, Footer } = Layout;
@@ -42,17 +43,41 @@ const App: React.FC = () => {
 
       // Check if file is selected, if so, upload to S3
       let filePath = "";
+      let labels = [];
+
       if (file) {
         // Upload the file to S3
         const fileKey = `uploads/${Date.now()}_${file.name}`;
         filePath = fileKey;
         await uploadData({
-            path: fileKey,
-            data: file,
-            options: {
-              bucket: 'ca-as1-lostnfound'
-            }
-          }).result;
+          path: fileKey,
+          data: file,
+          options: {
+            bucket: 'ca-as1-lostnfound'
+          }
+        }).result;
+
+        // Call Amplify Predictions to identify labels from the uploaded image
+        const predictionResponse = await Predictions.identify({
+          labels: {
+            source: {
+              file
+            },
+            type: 'LABELS'  // Use the appropriate type for label prediction
+          }
+        });
+
+        // Extract labels from the response
+        if (predictionResponse?.labels) {
+          labels = predictionResponse.labels.map((label: any) => label.name);
+        } else {
+          // Fallback if no labels were detected
+          console.log("No labels detected.");
+          labels = [];
+        }
+
+        // If you want to store them as JSON, you can use JSON.stringify
+        // labels = JSON.stringify(labels);
       }
 
       // Log if client.models.Item is available
@@ -69,11 +94,12 @@ const App: React.FC = () => {
         itemType,
         itemStatus,
         foundLostBy,
-        imagePath: filePath, 
+        imagePath: filePath,
+        labels: JSON.stringify(labels)  // Add labels here
       },
-      {
-        authMode: 'userPool',
-      });
+        {
+          authMode: 'userPool',
+        });
 
       console.log("Created new item:", newItem);
 
@@ -155,11 +181,11 @@ const App: React.FC = () => {
 
             <Form.Item
               label="Item Image"
-              valuePropName="fileList" 
+              valuePropName="fileList"
               getValueFromEvent={normFile}
             >
-                <input type="file" onChange={handleFileChange}>
-                </input>        
+              <input type="file" onChange={handleFileChange}>
+              </input>
             </Form.Item>
 
             <Form.Item style={{ textAlign: "center" }}>
