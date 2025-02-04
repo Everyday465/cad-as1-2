@@ -1,5 +1,4 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-import { addUserToGroup } from "./add-user-to-group/resource"
 import { notification } from "../functions/notification/resource";
 import { verifyEmailSES } from "../functions/verify-email-ses/resource";
 import { checkEmailSESStatus } from "../functions/check-email-ses-status/resource";
@@ -39,17 +38,6 @@ const schema = a.schema({
       allow.groups(["ADMINS"]).to(["read", "create", "update", "delete"]),
       allow.groups(["STUDENTS"]).to(["read", "create", "update"])
     ]),
-
-  addUserToGroup: a
-    .mutation()
-    .arguments({
-      userId: a.string().required(),
-      groupName: a.string().required(),
-    })
-    .authorization((allow) => [allow.group("ADMINS")])
-    .handler(a.handler.function(addUserToGroup))
-    .returns(a.json()),
-
 
   sendNotification: a
     .query()

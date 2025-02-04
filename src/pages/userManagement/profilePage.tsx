@@ -16,7 +16,7 @@ const client = generateClient<Schema>();
 
 const { Content, Footer } = Layout;
 
-const defaultCover = 'https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png';
+const defaultCover = 'uploads/default_user_profile.jpg';
 
 async function getUserGroups(): Promise<string> {
     try {
@@ -47,7 +47,7 @@ const ProfilePage: React.FC = () => {
     const [authType, setAuthType] = useState(userAttributes?.auth_type || '');
     const { user } = useAuthenticator((context) => [context.user]);
 
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>();
 
     const dropdownItems = [
         {
@@ -73,7 +73,6 @@ const ProfilePage: React.FC = () => {
         if (user.username) {
             try {
                 const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
-
                 if (data) {
                     setUserProfile({
                         userId: data.userId ?? 'Unknown User ID',
@@ -86,6 +85,7 @@ const ProfilePage: React.FC = () => {
                     });
                 } else {
                     createUserProfile();
+                    window.location.reload();
                 }
             } catch (error) {
                 console.error('Error fetching item:', error);
@@ -101,7 +101,7 @@ const ProfilePage: React.FC = () => {
         // Make the API call to create a new item
         const newUserProfile = await client.models.UserProfile.create({
             userId: userId ?? 'Unknown User ID',
-            email: email ?? 'No Email',
+            email: email,
             username: 'No Username',
             authType: authType,
             profilePath: '',
@@ -123,16 +123,14 @@ const ProfilePage: React.FC = () => {
     // Fetch user attributes when the component mounts
     useEffect(() => {
         getUserGroups().then(group => setAuthType(group));
-
         fetchUserData();
-
-        getUserProfile();
     }, []); // Empty dependency array ensures this runs only once on mount
 
     useEffect(() => {
-        getUserProfile();
-    }, [userProfile])
-
+        if (userAttributes && authType) {
+            getUserProfile();
+        }
+    }, [userAttributes, authType]); // Add authType to the dependency array
     return (
         <Layout>
             <Content style={{ padding: "0 48px" }}>
@@ -150,7 +148,7 @@ const ProfilePage: React.FC = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
                             <StorageImage
                                 alt={defaultCover}
-                                path={userProfile?.profilePath || 'uploads/1735195523776_bell__notification.jpg'}
+                                path={userProfile?.profilePath || 'uploads/default_user_profile.jpg'}
                                 style={{
                                     width: '175px',
                                     height: '175px',

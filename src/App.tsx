@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import CatalogPage from './pages/student/catalogPage';
 import ItemDescription from './pages/student/itemDesc';
 import CreateItem from './pages/student/createItem';
-import Test from './pages/test';
 
 //admin
 import ItemCatalogPage from './pages/admin/itemCatalogPage';
@@ -43,7 +42,7 @@ const App = () => {
     const userId = user?.username;
     const { data } = await client.models.UserProfile.get({ userId }, { authMode: 'userPool' });
     setProfilePic(data?.profilePath || '');
-    setUsername(data?.username || '');
+    setUsername(data?.username || 'User');
   };
 
   useEffect(() => {
@@ -84,11 +83,14 @@ const App = () => {
         }}
       >
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <img
-            src="https://sgwiki.com/images/thumb/0/01/Nanyang_Polytechnic_Logo.png/300px-Nanyang_Polytechnic_Logo.png"
-            style={{ marginLeft: '100px', marginRight: '50px', height: '100%', width: '200px' }}
-            alt="Logo"
-          />
+          <Link to={"/itemcatalogpage"}>
+            <img
+              src="https://sgwiki.com/images/thumb/0/01/Nanyang_Polytechnic_Logo.png/300px-Nanyang_Polytechnic_Logo.png"
+              style={{ marginLeft: '100px', marginRight: '50px', height: '100%', width: '200px', display:'block' }}
+              alt="Logo"
+            /> 
+          </Link>
+
           <Menu
             theme="light" // Use "light" theme to avoid dark background
             mode="horizontal"
@@ -129,7 +131,6 @@ const App = () => {
         <Route path="/catalogPage" element={<CatalogPage />} />
         <Route path="/catalogPage/:id" element={<ItemDescription />} />
         <Route path="/createItem" element={<CreateItem />} />
-        <Route path="/test" element={<Test />} />
         <Route path="/profilePage" element={<ProfilePage />} />
       </Routes>
     </Router>

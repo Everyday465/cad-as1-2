@@ -8,7 +8,7 @@ import { storage } from './storage/resource';
 import { notification } from './functions/notification/resource';
 import { verifyEmailSES } from './functions/verify-email-ses/resource';
 import { checkEmailSESStatus } from './functions/check-email-ses-status/resource';
-
+import { postConfirmation } from './functions/postConfirmation/resource'; // Import PostConfirmation function
 
 const backend = defineBackend({
   auth,
@@ -17,63 +17,68 @@ const backend = defineBackend({
   notification,
   verifyEmailSES,
   checkEmailSESStatus,
+  postConfirmation, // Add PostConfirmation function
 });
 
-//ses access
+// ✅ Attach SES Access Policy
 (() => {
-  // Access the Lambda function resources
   const checkEmailSESStatusLambda = backend.checkEmailSESStatus.resources.lambda;
   const verifyEmailSESLambda = backend.verifyEmailSES.resources.lambda;
   const notificationLambda = backend.notification.resources.lambda;
 
-  // Define a new IAM Policy Statement for SES SendEmail
   const sesPolicyStatement = new iam.PolicyStatement({
     sid: 'AllowSES',
     actions: ['ses:*'],
     resources: ['arn:aws:ses:us-east-1:058264429730:identity/*'],
   });
 
-  // Attach the SES policy to the Lambda functions
   checkEmailSESStatusLambda.addToRolePolicy(sesPolicyStatement);
   verifyEmailSESLambda.addToRolePolicy(sesPolicyStatement);
   notificationLambda.addToRolePolicy(sesPolicyStatement);
 })();
 
-//amplify prediction
+// ✅ Attach Cognito Group Management Policy to PostConfirmation Lambda
 (() => {
-  // Grant permission to use AWS Rekognition for label detection
-backend.auth.resources.groups["ADMINS"].role.addToPrincipalPolicy(
-  new iam.PolicyStatement({
-    actions: [
-      "rekognition:DetectLabels",
-    ],
-    resources: ["*"],
-  })
-);
+  const postConfirmationLambda = backend.postConfirmation.resources.lambda;
 
-backend.auth.resources.groups["STUDENTS"].role.addToPrincipalPolicy(
-  new iam.PolicyStatement({
-    actions: [
-      "rekognition:DetectLabels",
-    ],
-    resources: ["*"],
-  })
-);
+  const cognitoPolicyStatement = new iam.PolicyStatement({
+    effect: iam.Effect.ALLOW,
+    actions: ["cognito-idp:AdminAddUserToGroup"],
+    resources: ["arn:aws:cognito-idp:us-east-1:058264429730:userpool/us-east-1_erFvO2LdX"], // Replace with actual values
+  });
 
-// Configure Predictions category for label detection
-backend.addOutput({
-  custom: {
-    Predictions: {
-      identify: {
-        identifyLabels: {
-          defaults: {
-            type: "ALL",
+  postConfirmationLambda.addToRolePolicy(cognitoPolicyStatement);
+})();
+
+// ✅ Amplify Predictions Permissions
+(() => {
+  backend.auth.resources.groups["ADMINS"].role.addToPrincipalPolicy(
+    new iam.PolicyStatement({
+      actions: ["rekognition:DetectLabels"],
+      resources: ["*"],
+    })
+  );
+
+  backend.auth.resources.groups["STUDENTS"].role.addToPrincipalPolicy(
+    new iam.PolicyStatement({
+      actions: ["rekognition:DetectLabels"],
+      resources: ["*"],
+    })
+  );
+
+  backend.addOutput({
+    custom: {
+      Predictions: {
+        identify: {
+          identifyLabels: {
+            defaults: {
+              type: "ALL",
+            },
+            proxy: false,
+            region: backend.auth.stack.region,
           },
-          proxy: false,
-          region: backend.auth.stack.region,
         },
       },
     },
-  },
-});
+  });
 })();

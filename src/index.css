@@ -15,7 +15,6 @@ body {
 .authenticator-container {
   position: relative;
   z-index: 1;
-
   padding: 150px;
   border-radius: 10px;
 }
